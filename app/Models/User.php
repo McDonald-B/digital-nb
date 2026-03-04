@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\NoticeBoard;
 
 class User extends Authenticatable
 {
@@ -21,7 +22,25 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    public function isAdmin(): bool
+{
+    return $this->role === 'admin';
+}
+
+    // Relationships
+    public function boards()
+    {
+        return $this->hasMany(NoticeBoard::class, 'owner_id');
+    }
+
+    public function memberships()
+    {
+        return $this->hasMany(BoardMembership::class);
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
