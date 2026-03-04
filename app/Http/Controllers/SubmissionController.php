@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\NoticeBoard;
+use App\Models\Submission;
+use Illuminate\Support\Facades\Auth;
 
 class SubmissionController extends Controller
 {
@@ -23,12 +26,33 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @param NoticeBoard $board
      */
-    public function store(Request $request)
+    public function store(Request $request, NoticeBoard $board)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:poster,flyer',
+            'content' => 'required_if:type,flyer|nullable|string',
+            'file' => 'required_if:type,poster|nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('submissions', 'public');
+        }
+        Submission::create([
+        'notice_board_id' => $board->id,
+            'user_id' => Auth::id(),
+            'type' => $validated['type'],
+            'title' => $validated['title'],
+            'content' => $validated['content'] ?? null,
+            'file_path' => $filePath,
+            'status' => 'pending',
+            'expires_at' => now()->addWeek(),
+        ]);
+        return redirect()->route('boards.show', $board)->with('success', 'Submission received!');
     }
+
 
     /**
      * Display the specified resource.
