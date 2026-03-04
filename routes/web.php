@@ -3,7 +3,7 @@ use App\Http\Controllers\NoticeBoardController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
-use inertia\Inertia;
+use Inertia\Inertia;
 
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
