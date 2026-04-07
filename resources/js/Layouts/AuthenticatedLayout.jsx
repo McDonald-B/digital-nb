@@ -3,6 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -62,9 +63,9 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link
-                                            href={route('profile.edit')}
+                                            href={route('dashboard')}
                                         >
-                                            Profile
+                                            Dashboard
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
@@ -147,8 +148,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
+                            <ResponsiveNavLink href={route('dashboard')}>
+                                Dashboard
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
