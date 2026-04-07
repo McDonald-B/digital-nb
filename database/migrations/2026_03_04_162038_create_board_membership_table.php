@@ -10,22 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('board_memberships', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->foreignId('notice_board_id')->constrained()->onDelete('cascade');
-        $table->string('role')->default('member'); // 'member' or 'admin'
-        $table->timestamps();
-    });
-}
+    {
+        Schema::create('board_memberships', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('notice_board_id')->constrained()->onDelete('cascade');
+            $table->string('role')->default('member');
+            $table->timestamps();
 
+            $table->unique(['user_id', 'notice_board_id']);
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('board_membership');
+        Schema::dropIfExists('board_memberships');
     }
 };

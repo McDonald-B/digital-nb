@@ -2,47 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\NoticeBoard;
 use App\Models\Submission;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SubmissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function create(NoticeBoard $board)
     {
-        //
+        return Inertia::render('Submissions/Create', [
+            'board' => [
+                'id' => $board->id,
+                'name' => $board->name,
+            ],
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * @param NoticeBoard $board
-     */
     public function store(Request $request, NoticeBoard $board)
     {
+        $user = $request->user();
+
+        $isMember = $board->members()
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if (! $isMember) {
+            abort(403, 'You must join this board before submitting.');
+        }
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:poster,flyer',
-            'content' => 'required_if:type,flyer|nullable|string',
-            'file' => 'required_if:type,poster|nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'title' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:flyer,poster'],
+            'content' => ['required_if:type,flyer', 'nullable', 'string'],
+            'file' => ['required_if:type,poster', 'nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
         ]);
+
         $filePath = null;
+
         if ($request->hasFile('file')) {
             $filePath = $request->file('file')->store('submissions', 'public');
         }
+
         Submission::create([
-        'notice_board_id' => $board->id,
-            'user_id' => Auth::id(),
+            'notice_board_id' => $board->id,
+            'user_id' => $user->id,
             'type' => $validated['type'],
             'title' => $validated['title'],
             'content' => $validated['content'] ?? null,
@@ -50,39 +54,9 @@ class SubmissionController extends Controller
             'status' => 'pending',
             'expires_at' => now()->addWeek(),
         ]);
-        return redirect()->route('boards.show', $board)->with('success', 'Submission received!');
-    }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()
+            ->route('boards.show', $board->id)
+            ->with('success', 'Submission sent for approval!');
     }
 }

@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\NoticeBoard;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -25,23 +22,6 @@ class User extends Authenticatable
         'role',
     ];
 
-    public function isAdmin(): bool
-{
-    return $this->role === 'admin';
-}
-
-    // Relationships
-    public function boards()
-    {
-        return $this->hasMany(NoticeBoard::class, 'owner_id');
-    }
-
-    public function memberships()
-    {
-        return $this->hasMany(BoardMembership::class);
-    }
-
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -52,11 +32,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function boards()
+    {
+        return $this->hasMany(NoticeBoard::class, 'owner_id');
+    }
+
+    public function memberships()
+    {
+        return $this->hasMany(BoardMembership::class);
+    }
+
     protected function casts(): array
     {
         return [

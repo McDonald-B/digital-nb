@@ -2,34 +2,32 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Submission;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
 class RemoveExpiredSubmissions extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'submissions:remove-expired-submissions';
+    protected $signature = 'submissions:remove-expired';
+    protected $description = 'Delete expired submissions and any stored poster images';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Remove submissions past their expiry date';
-
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
+    public function handle(): int
     {
-        $count = Submission::where('expires_at', '<', now())
-                        ->where('status', 'approved')
-                        ->delete();
-        $this->info("Removed {$count} expired submissions.");
+        $expiredSubmissions = Submission::whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->get();
 
+        foreach ($expiredSubmissions as $submission) {
+            if ($submission->file_path) {
+                Storage::disk('public')->delete($submission->file_path);
+            }
+
+            $submission->delete();
+        }
+
+        $this->info('Removed ' . $expiredSubmissions->count() . ' expired submissions.');
+
+        return self::SUCCESS;
     }
 }
+

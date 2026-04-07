@@ -2,63 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Submission;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class AdminController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $pendingSubmissions = Submission::with(['board', 'user'])
+            ->where('status', 'pending')
+            ->latest()
+            ->get()
+            ->map(function ($submission) {
+                return [
+                    'id' => $submission->id,
+                    'title' => $submission->title,
+                    'type' => $submission->type,
+                    'content' => $submission->content,
+                    'file_path' => $submission->file_path,
+                    'status' => $submission->status,
+                    'board' => $submission->board
+                        ? [
+                            'id' => $submission->board->id,
+                            'name' => $submission->board->name,
+                        ]
+                        : null,
+                    'user' => $submission->user
+                        ? [
+                            'id' => $submission->user->id,
+                            'name' => $submission->user->name,
+                        ]
+                        : null,
+                ];
+            });
+
+        return Inertia::render('Admin/Index', [
+            'pendingSubmissions' => $pendingSubmissions,
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function approve(Submission $submission)
     {
-        //
+        $submission->update([
+            'status' => 'approved',
+        ]);
+
+        return redirect()
+            ->route('admin.index')
+            ->with('success', 'Submission approved!');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function reject(Submission $submission)
     {
-        //
+        $submission->update([
+            'status' => 'rejected',
+        ]);
+
+        return redirect()
+            ->route('admin.index')
+            ->with('success', 'Submission rejected!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function destroy(Submission $submission)
     {
-        //
-    }
+        if ($submission->file_path) {
+            Storage::disk('public')->delete($submission->file_path);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $submission->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()
+            ->route('admin.index')
+            ->with('success', 'Submission deleted!');
     }
 }
