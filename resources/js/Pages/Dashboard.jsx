@@ -45,6 +45,32 @@ export default function Dashboard() {
                             </Link>
                         </div>
 
+                        <div className="rounded-lg bg-white p-6 shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-900">Your Boards</h3>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Manage all the boards that you've already joined, where you can submit and view current notices.
+                            </p>
+                            <Link
+                                href={route('boards.my')}
+                                className="mt-4 inline-block rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                            >
+                                My Boards
+                            </Link>
+                        </div>
+
+                        <div className="rounded-lg bg-white p-6 shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-900">Recommended Boards</h3>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Discover boards based on the categories of boards you have already joined.
+                            </p>
+                            <Link
+                                href={route('boards.recommended')}
+                                className="mt-4 inline-block rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                            >
+                                View Recommendations
+                            </Link>
+                        </div>
+
                         {user?.role === 'admin' && (
                             <div className="rounded-lg bg-white p-6 shadow-sm">
                                 <h3 className="text-lg font-semibold text-gray-900">Admin Queue</h3>

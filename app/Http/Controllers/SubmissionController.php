@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NoticeBoard;
 use App\Models\Submission;
+use App\Services\SubmissionModerationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,15 +12,22 @@ class SubmissionController extends Controller
 {
     public function create(NoticeBoard $board)
     {
+        $user = auth()->user();
+
+        $isMember = $board->members()
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if (! $isMember) {
+            abort(403, 'You must join this board before submitting.');
+        }
+
         return Inertia::render('Submissions/Create', [
-            'board' => [
-                'id' => $board->id,
-                'name' => $board->name,
-            ],
+            'board' => $board,
         ]);
     }
 
-    public function store(Request $request, NoticeBoard $board)
+    public function store(Request $request, NoticeBoard $board, SubmissionModerationService $moderationService)
     {
         $user = $request->user();
 
@@ -44,6 +52,11 @@ class SubmissionController extends Controller
             $filePath = $request->file('file')->store('submissions', 'public');
         }
 
+        $moderation = $moderationService->moderate(
+            $validated['title'],
+            $validated['content'] ?? null
+        );
+
         Submission::create([
             'notice_board_id' => $board->id,
             'user_id' => $user->id,
@@ -51,12 +64,17 @@ class SubmissionController extends Controller
             'title' => $validated['title'],
             'content' => $validated['content'] ?? null,
             'file_path' => $filePath,
-            'status' => 'pending',
+            'status' => $moderation['status'],
+            'moderation_reason' => $moderation['reason'],
             'expires_at' => now()->addWeek(),
         ]);
 
+        $message = $moderation['status'] === 'flagged'
+            ? 'Submission created and automatically flagged for admin review.'
+            : 'Submission sent for approval.';
+
         return redirect()
             ->route('boards.show', $board->id)
-            ->with('success', 'Submission sent for approval!');
+            ->with('success', $message);
     }
 }

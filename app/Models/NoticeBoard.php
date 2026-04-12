@@ -3,18 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NoticeBoard extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
+        'category',
         'is_private',
         'owner_id',
-    ];
-
-    protected $casts = [
-        'is_private' => 'boolean',
     ];
 
     public function owner()
@@ -30,5 +30,10 @@ class NoticeBoard extends Model
     public function submissions()
     {
         return $this->hasMany(Submission::class, 'notice_board_id');
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(BoardInvitation::class, 'notice_board_id');
     }
 }

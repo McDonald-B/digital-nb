@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NoticeBoardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\InvitationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -24,6 +25,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/boards/{board}/submit', [SubmissionController::class, 'create'])->name('submissions.create');
     Route::post('/boards/{board}/submit', [SubmissionController::class, 'store'])->name('submissions.store');
+
+    Route::delete('/boards/{board}/leave', [NoticeBoardController::class, 'leave'])
+        ->name('boards.leave');
+
+    Route::patch('/boards/{board}/members/{user}/promote', [NoticeBoardController::class, 'promoteMember'])
+        ->name('boards.members.promote');
+
+    Route::patch('/boards/{board}/members/{user}/demote', [NoticeBoardController::class, 'demoteMember'])
+        ->name('boards.members.demote');
+
+    Route::delete('/boards/{board}/members/{user}', [NoticeBoardController::class, 'removeMember'])
+        ->name('boards.members.remove');
+
+    Route::patch('/boards/{board}/transfer-ownership/{user}', [NoticeBoardController::class, 'transferOwnership'])
+        ->name('boards.transferOwnership');
+
+    Route::post('/boards/{board}/invite', [NoticeBoardController::class, 'inviteMember'])
+        ->name('boards.invite');
+
+    Route::post('/invitations/{invitation}/accept', [NoticeBoardController::class, 'acceptInvitation'])
+        ->name('boards.invitations.accept');
+
+    Route::post('/invitations/{invitation}/decline', [NoticeBoardController::class, 'declineInvitation'])
+        ->name('boards.invitations.decline');
+
+    Route::get('/my-boards', [NoticeBoardController::class, 'myBoards'])
+        ->name('boards.my');
+
+    Route::get('/invitations', [InvitationController::class, 'index'])
+        ->name('invitations.index');
+
+    Route::get('/recommended', [NoticeBoardController::class, 'recommended'])
+        ->name('boards.recommended');
 
     Route::middleware('admin')->group(function () {
         Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');

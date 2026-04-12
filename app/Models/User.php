@@ -47,6 +47,11 @@ class User extends Authenticatable
         return $this->hasMany(BoardMembership::class);
     }
 
+    public function boardInvitations()
+    {
+        return $this->hasMany(BoardInvitation::class, 'invited_user_id');
+    }
+
     protected function casts(): array
     {
         return [

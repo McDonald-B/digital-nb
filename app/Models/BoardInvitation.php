@@ -5,24 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Submission extends Model
+class BoardInvitation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'notice_board_id',
-        'user_id',
-        'type',
-        'title',
-        'content',
-        'file_path',
+        'invited_user_id',
+        'invited_by',
         'status',
-        'moderation_reason',
-        'expires_at',
-    ];
-
-    protected $casts = [
-        'expires_at' => 'datetime',
     ];
 
     public function board()
@@ -30,8 +21,13 @@ class Submission extends Model
         return $this->belongsTo(NoticeBoard::class, 'notice_board_id');
     }
 
-    public function user()
+    public function invitedUser()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'invited_user_id');
+    }
+
+    public function inviter()
+    {
+        return $this->belongsTo(User::class, 'invited_by');
     }
 }

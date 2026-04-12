@@ -29,9 +29,29 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Dashboard
                                 </NavLink>
 
-                                <NavLink href={route('boards.index')} active={route().current('boards.*')}>
+                                <NavLink
+                                    href={route('boards.index')}
+                                    active={
+                                        route().current('boards.index') ||
+                                        route().current('boards.show') ||
+                                        route().current('boards.create')
+                                    }
+                                >
                                     Boards
                                 </NavLink>
+
+                                <NavLink href={route('boards.my')} active={route().current('boards.my')}>
+                                    My Boards
+                                </NavLink>
+
+                                <NavLink href={route('invitations.index')} active={route().current('invitations.*')}>
+                                    Invitations
+                                </NavLink>
+
+                                <NavLink href={route('boards.recommended')} active={route().current('boards.recommended')}>
+                                    Recommended
+                                </NavLink>
+
 
                                 {user?.role === 'admin' && (
                                     <NavLink href={route('admin.index')} active={route().current('admin.*')}>

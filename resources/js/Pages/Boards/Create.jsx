@@ -1,15 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
 export default function Create() {
+    const { auth } = usePage().props;
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         description: '',
+        category: 'General',
         is_private: false,
     });
 
@@ -17,6 +16,17 @@ export default function Create() {
         e.preventDefault();
         post(route('boards.store'));
     };
+
+    const categories = [
+        'General',
+        'Sports',
+        'University',
+        'Events',
+        'Housing',
+        'Jobs',
+        'Society',
+        'Marketplace',
+    ];
 
     return (
         <AuthenticatedLayout
@@ -33,43 +43,73 @@ export default function Create() {
                     <div className="overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg">
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="name" value="Board Name" />
-                                <TextInput
-                                    id="name"
-                                    className="mt-1 block w-full"
+                                <label className="mb-1 block text-sm font-medium text-gray-700">
+                                    Board Name
+                                </label>
+                                <input
+                                    type="text"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
+                                    className="w-full rounded border border-gray-300 px-3 py-2"
                                 />
-                                <InputError message={errors.name} className="mt-2" />
+                                {errors.name && <div className="mt-1 text-sm text-red-600">{errors.name}</div>}
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="description" value="Description" />
+                                <label className="mb-1 block text-sm font-medium text-gray-700">
+                                    Description
+                                </label>
                                 <textarea
-                                    id="description"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    rows="5"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
+                                    rows="4"
+                                    className="w-full rounded border border-gray-300 px-3 py-2"
                                 />
-                                <InputError message={errors.description} className="mt-2" />
+                                {errors.description && (
+                                    <div className="mt-1 text-sm text-red-600">{errors.description}</div>
+                                )}
                             </div>
 
-                            <label className="flex items-center gap-3">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">
+                                    Category
+                                </label>
+                                <select
+                                    value={data.category}
+                                    onChange={(e) => setData('category', e.target.value)}
+                                    className="w-full rounded border border-gray-300 px-3 py-2"
+                                >
+                                    {categories.map((category) => (
+                                        <option key={category} value={category}>
+                                            {category}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.category && (
+                                    <div className="mt-1 text-sm text-red-600">{errors.category}</div>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
                                 <input
                                     id="is_private"
                                     type="checkbox"
                                     checked={data.is_private}
                                     onChange={(e) => setData('is_private', e.target.checked)}
-                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                    className="rounded border-gray-300"
                                 />
-                                <span className="text-sm text-gray-700">Private board</span>
-                            </label>
-                            <InputError message={errors.is_private} className="mt-2" />
+                                <label htmlFor="is_private" className="text-sm text-gray-700">
+                                    Make this board private
+                                </label>
+                            </div>
 
-                            <PrimaryButton disabled={processing}>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+                            >
                                 Create Board
-                            </PrimaryButton>
+                            </button>
                         </form>
                     </div>
                 </div>
