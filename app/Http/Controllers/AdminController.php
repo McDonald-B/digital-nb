@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\SubmissionApprovedNotification;
+use App\Notifications\SubmissionRejectedNotification;
 use App\Models\Submission;
 use Inertia\Inertia;
 
@@ -56,7 +58,7 @@ class AdminController extends Controller
         abort_unless($isGlobalAdmin || $isBoardAdmin, 403);
     }
 
-    public function approve(Submission $submission)
+    public function approve(\App\Models\Submission $submission)
     {
         $this->authorizeBoardAdmin($submission);
 
@@ -65,16 +67,24 @@ class AdminController extends Controller
             'moderation_reason' => null,
         ]);
 
+        $submission->user->notify(
+            new SubmissionApprovedNotification($submission, $submission->board)
+        );
+
         return back()->with('success', 'Submission approved.');
     }
 
-    public function reject(Submission $submission)
+    public function reject(\App\Models\Submission $submission)
     {
         $this->authorizeBoardAdmin($submission);
 
         $submission->update([
             'status' => 'rejected',
         ]);
+
+        $submission->user->notify(
+            new SubmissionRejectedNotification($submission, $submission->board)
+        );
 
         return back()->with('success', 'Submission rejected.');
     }

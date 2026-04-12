@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\BoardInvitationNotification;
+use App\Notifications\BoardAdminPromotedNotification;
 use App\Models\BoardMembership;
 use App\Models\NoticeBoard;
 use App\Models\User;
@@ -220,7 +222,7 @@ class NoticeBoardController extends Controller
             ->with('success', 'You have left the board.');
     }
 
-    public function promoteMember(NoticeBoard $board, User $user)
+    public function promoteMember(\App\Models\NoticeBoard $board, \App\Models\User $user)
     {
         if ($board->owner_id !== auth()->id()) {
             return back()->with('error', 'Only the board owner can promote members.');
@@ -241,6 +243,8 @@ class NoticeBoardController extends Controller
         $membership->update([
             'role' => 'admin',
         ]);
+
+        $user->notify(new BoardAdminPromotedNotification($board, auth()->user()));
 
         return back()->with('success', "{$user->name} has been promoted to board admin.");
     }
@@ -334,7 +338,7 @@ class NoticeBoardController extends Controller
         return back()->with('success', "{$user->name} is now the board owner.");
     }
 
-    public function inviteMember(Request $request, NoticeBoard $board)
+    public function inviteMember(\Illuminate\Http\Request $request, \App\Models\NoticeBoard $board)
     {
         if ($board->owner_id !== auth()->id()) {
             return back()->with('error', 'Only the board owner can invite users.');
@@ -348,7 +352,7 @@ class NoticeBoardController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = \App\Models\User::where('email', $validated['email'])->first();
 
         if (! $user) {
             return back()->with('error', 'No user found with that email address.');
@@ -358,7 +362,7 @@ class NoticeBoardController extends Controller
             return back()->with('error', 'That user is already a member of this board.');
         }
 
-        BoardInvitation::updateOrCreate(
+        \App\Models\BoardInvitation::updateOrCreate(
             [
                 'notice_board_id' => $board->id,
                 'invited_user_id' => $user->id,
@@ -368,6 +372,8 @@ class NoticeBoardController extends Controller
                 'status' => 'pending',
             ]
         );
+
+        $user->notify(new BoardInvitationNotification($board, auth()->user()));
 
         return back()->with('success', "Invitation sent to {$user->email}.");
     }

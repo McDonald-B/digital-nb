@@ -7,8 +7,8 @@ import { route } from 'ziggy-js';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const { auth, flash } = usePage().props;
-    const user = auth.user;
+    const { auth, flash, unreadNotificationsCount = 0 } = usePage().props;
+    const user = auth?.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -50,6 +50,15 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                 <NavLink href={route('boards.recommended')} active={route().current('boards.recommended')}>
                                     Recommended
+                                </NavLink>
+
+                                <NavLink href={route('notifications.index')} active={route().current('notifications.*')}>
+                                    Notifications
+                                    {unreadNotificationsCount > 0 && (
+                                        <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+                                            {unreadNotificationsCount}
+                                        </span>
+                                    )}
                                 </NavLink>
 
 
@@ -150,7 +159,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">{user.name}</div>
+                            <div className="text-base font-medium text-gray-800">{user?.name}</div>
                             <div className="text-sm font-medium text-gray-500">{user.email}</div>
                         </div>
 

@@ -71,6 +71,19 @@ export default function Dashboard() {
                             </Link>
                         </div>
 
+                        <div className="rounded-lg bg-white p-6 shadow-sm">
+                            <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                            <p className="mt-2 text-sm text-gray-600">
+                                View board invites, moderation updates, and role changes in one place.
+                            </p>
+                            <Link
+                                href={route('notifications.index')}
+                                className="mt-4 inline-block rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            >
+                                View Notifications
+                            </Link>
+                        </div>
+
                         {user?.role === 'admin' && (
                             <div className="rounded-lg bg-white p-6 shadow-sm">
                                 <h3 className="text-lg font-semibold text-gray-900">Admin Queue</h3>
