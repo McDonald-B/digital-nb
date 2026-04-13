@@ -2,21 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Submission;
 use App\Notifications\SubmissionApprovedNotification;
 use App\Notifications\SubmissionRejectedNotification;
-use App\Models\Submission;
 use Inertia\Inertia;
 
 class AdminController extends Controller
 {
+    protected function canAccessAdminPanel($user): bool
+    {
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        return $user->memberships()
+            ->where('role', 'admin')
+            ->exists();
+    }
+
     public function index()
     {
         $user = auth()->user();
 
+        abort_unless($this->canAccessAdminPanel($user), 403, 'Unauthorized.');
+
         $isGlobalAdmin = $user->role === 'admin';
 
-        $query = Submission::with(['board', 'user'])
-            ->latest();
+        $query = Submission::with(['board', 'user'])->latest();
 
         if (! $isGlobalAdmin) {
             $query->whereHas('board.members', function ($q) use ($user) {
@@ -58,7 +70,7 @@ class AdminController extends Controller
         abort_unless($isGlobalAdmin || $isBoardAdmin, 403);
     }
 
-    public function approve(\App\Models\Submission $submission)
+    public function approve(Submission $submission)
     {
         $this->authorizeBoardAdmin($submission);
 
@@ -74,7 +86,7 @@ class AdminController extends Controller
         return back()->with('success', 'Submission approved.');
     }
 
-    public function reject(\App\Models\Submission $submission)
+    public function reject(Submission $submission)
     {
         $this->authorizeBoardAdmin($submission);
 

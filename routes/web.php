@@ -69,12 +69,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])
         ->name('notifications.readAll');
 
-    Route::middleware('admin')->group(function () {
-        Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-        Route::patch('/admin/submissions/{submission}/approve', [AdminController::class, 'approve'])->name('admin.approve');
-        Route::patch('/admin/submissions/{submission}/reject', [AdminController::class, 'reject'])->name('admin.reject');
-        Route::delete('/admin/submissions/{submission}', [AdminController::class, 'destroy'])->name('admin.destroy');
-    });
+    Route::get('/trending', [NoticeBoardController::class, 'trending'])
+        ->name('boards.trending');
+
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::patch('/admin/submissions/{submission}/approve', [AdminController::class, 'approve'])->name('admin.approve');
+    Route::patch('/admin/submissions/{submission}/reject', [AdminController::class, 'reject'])->name('admin.reject');
+    Route::delete('/admin/submissions/{submission}', [AdminController::class, 'destroy'])->name('admin.destroy');
 });
 
 Route::middleware('auth')->group(function () {

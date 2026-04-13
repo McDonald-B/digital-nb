@@ -103,6 +103,15 @@ class NoticeBoardController extends Controller
     {
         $board->load('owner');
 
+        if ($board->is_private) {
+            $isMemberOrOwner = $board->owner_id === auth()->id()
+                || $board->members()
+                ->where('user_id', auth()->id())
+                ->exists();
+
+            abort_unless($isMemberOrOwner, 403, 'This private board is only visible to members.');
+        }
+
         $submissions = $board->submissions()
             ->with('user')
             ->where('status', 'approved')
@@ -494,6 +503,46 @@ class NoticeBoardController extends Controller
         return \Inertia\Inertia::render('Boards/Recommended', [
             'recommendedBoards' => $recommendedBoards,
             'joinedCategories' => $joinedCategories,
+        ]);
+    }
+
+    public function trending()
+    {
+        $boards = \App\Models\NoticeBoard::with('owner')
+            ->where('is_private', false)
+            ->get()
+            ->map(function ($board) {
+                $memberCount = $board->members()->count();
+
+                $approvedSubmissionCount = $board->submissions()
+                    ->where('status', 'approved')
+                    ->where(function ($query) {
+                        $query->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now());
+                    })
+                    ->count();
+
+                $trendingScore = ($memberCount * 2) + ($approvedSubmissionCount * 3);
+
+                return [
+                    'id' => $board->id,
+                    'name' => $board->name,
+                    'description' => $board->description,
+                    'category' => $board->category,
+                    'owner' => [
+                        'name' => $board->owner?->name,
+                    ],
+                    'member_count' => $memberCount,
+                    'approved_submission_count' => $approvedSubmissionCount,
+                    'trending_score' => $trendingScore,
+                ];
+            })
+            ->sortByDesc('trending_score')
+            ->take(10)
+            ->values();
+
+        return \Inertia\Inertia::render('Boards/Trending', [
+            'boards' => $boards,
         ]);
     }
 }
